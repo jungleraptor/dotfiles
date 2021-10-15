@@ -1,7 +1,6 @@
 syntax on
 
 set number
-set relativenumber
 set cursorline
 
 colorscheme jellybeans
@@ -14,5 +13,10 @@ set incsearch
 " Disable annoying error noise
 set noerrorbells visualbell t_vb=
 
-" Enable powerline fonts in  vim-airline“
-let g:airline_powerline_fonts = 1
+" Makes lightline work
+set laststatus=2
+
+" Removes redundant --INSERT--
+set noshowmode
+
+let g:lightline = { 'colorscheme': 'darcula', }
