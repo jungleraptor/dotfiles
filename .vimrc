@@ -1,5 +1,8 @@
 syntax on
 
+" show matching braces
+set showmatch
+
 set number
 set cursorline
 
