@@ -1,12 +1,11 @@
 syntax on
 
-" show matching braces
-set showmatch
-
 set number
 set cursorline
 
-colorscheme jellybeans
+let g:gruvbox_contrast_dark = 'hard'
+colorscheme gruvbox
+set background=dark
 
 " Better search
 set ignorecase
@@ -22,4 +21,11 @@ set laststatus=2
 " Removes redundant --INSERT--
 set noshowmode
 
-let g:lightline = { 'colorscheme': 'darcula', }
+" Fuzzy Find installed via git
+set rtp+=~/.fzf
+
+" Persistent undo
+set undodir=~/.vimdid
+set undofile
+
+let g:lightline = { 'colorscheme': 'gruvbox', }

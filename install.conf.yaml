@@ -5,5 +5,7 @@
 - clean: ['~']
 
 - link:
+    ~/.config/nvim : nvim
+    ~/.local/share/nvim : nvim
     ~/.vim: .vim
     ~/.vimrc: .vimrc
