@@ -6,6 +6,7 @@
 
 - link:
     ~/.alacritty.yaml : alacritty.yml
+    ~/.config/fish/config.fish : config.fish
     ~/.config/nvim : nvim
     ~/.local/share/nvim : nvim
     ~/.vim: .vim
