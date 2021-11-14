@@ -5,6 +5,7 @@
 - clean: ['~']
 
 - link:
+    ~/.alacritty.yaml : alacritty.yml
     ~/.config/nvim : nvim
     ~/.local/share/nvim : nvim
     ~/.vim: .vim
