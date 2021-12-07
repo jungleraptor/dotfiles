@@ -3,3 +3,4 @@
 npm set prefix ~/.npm
 set PATH $HOME/.npm/bin $PATH
 set PATH ./node_modules/.bin $PATH
+set PATH $HOME/.cargo/bin $PATH
