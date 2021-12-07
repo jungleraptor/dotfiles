@@ -4,3 +4,6 @@ npm set prefix ~/.npm
 set PATH $HOME/.npm/bin $PATH
 set PATH ./node_modules/.bin $PATH
 set PATH $HOME/.cargo/bin $PATH
+
+# fzf
+set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
