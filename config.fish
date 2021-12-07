@@ -5,5 +5,8 @@ set PATH $HOME/.npm/bin $PATH
 set PATH ./node_modules/.bin $PATH
 set PATH $HOME/.cargo/bin $PATH
 
+# mainly for haskell
+set PATH $PATH $HOME/.local/bin
+
 # fzf
 set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
