@@ -11,3 +11,4 @@
     ~/.local/share/nvim : nvim
     ~/.vim: .vim
     ~/.vimrc: .vimrc
+    ~/.tmux.conf: tmux.conf
