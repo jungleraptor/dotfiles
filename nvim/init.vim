@@ -7,8 +7,12 @@ Plug 'neovim/nvim-lspconfig'
 Plug 'glepnir/lspsaga.nvim'
 Plug 'morhetz/gruvbox'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
+Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+Plug 'junegunn/fzf.vim'
 
 call plug#end()
+
+nnoremap <silent> <C-f> :Files<CR>
 
 lua << EOF
 local nvim_lsp = require('lspconfig')
