@@ -2,6 +2,7 @@ syntax on
 
 set number
 set cursorline
+set expandtab
 
 let g:gruvbox_contrast_dark = 'hard'
 colorscheme gruvbox
