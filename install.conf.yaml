@@ -8,6 +8,7 @@
     ~/.alacritty.yaml : alacritty.yml
     ~/.config/fish/config.fish : config.fish
     ~/.config/nvim : nvim
+    ~/.gitconfig : gitconfig
     ~/.local/share/nvim : nvim
     ~/.vim: vim
     ~/.vimrc: vimrc
