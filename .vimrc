@@ -4,10 +4,6 @@ set number
 set cursorline
 set expandtab
 
-let g:gruvbox_contrast_dark = 'hard'
-colorscheme gruvbox
-set background=dark
-
 " Better search
 set ignorecase
 set smartcase
@@ -29,4 +25,5 @@ set rtp+=~/.fzf
 set undodir=~/.vimdid
 set undofile
 
-let g:lightline = { 'colorscheme': 'gruvbox', }
+set background=dark
+let g:lightline = { 'colorscheme': 'one', }

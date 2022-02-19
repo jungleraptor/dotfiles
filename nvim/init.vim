@@ -5,12 +5,12 @@ call plug#begin()
 
 Plug 'neovim/nvim-lspconfig'
 Plug 'glepnir/lspsaga.nvim'
-Plug 'morhetz/gruvbox'
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate'}
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'peterhoeg/vim-qml'
 Plug 'hashivim/vim-terraform'
+Plug 'mhartington/oceanic-next'
 
 call plug#end()
 
@@ -109,6 +109,6 @@ let g:rbpt_colorpairs = [
 
 let g:rbpt_loadcmd_toggle = 0
 
+colorscheme OceanicNext
 
 source ~/.vimrc
-
