@@ -10,3 +10,6 @@ set PATH $PATH $HOME/.local/bin
 
 # fzf
 set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
+
+# direnv hooks
+direnv hook fish | source

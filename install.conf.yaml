@@ -9,6 +9,7 @@
     ~/.config/fish/config.fish : config.fish
     ~/.config/nvim : nvim
     ~/.config/fish/fish_plugins : fish_plugins
+    ~/.config/nixpkgs/home.nix : home.nix
     ~/.gitconfig : gitconfig
     ~/.local/share/nvim : nvim
     ~/.vim: vim
