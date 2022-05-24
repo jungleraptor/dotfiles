@@ -11,5 +11,10 @@ set PATH $PATH $HOME/.local/bin
 # fzf
 set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
 
+# cmake defaults
+set -x CMAKE_C_COMPILER_LAUNCHER sccache
+set -x CMAKE_CXX_COMPILER_LAUNCHER sccache
+set -x CMAKE_GENERATOR Ninja
+
 # direnv hooks
 direnv hook fish | source
