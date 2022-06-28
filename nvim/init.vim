@@ -11,10 +11,22 @@ Plug 'junegunn/fzf.vim'
 Plug 'peterhoeg/vim-qml'
 Plug 'hashivim/vim-terraform'
 Plug 'mhartington/oceanic-next'
+Plug 'kyazdani42/nvim-web-devicons'
+Plug 'kyazdani42/nvim-tree.lua'
 
 call plug#end()
 
 nnoremap <silent> <C-f> :Files<CR>
+nnoremap <silent> <C-e> :NvimTreeToggle<CR>
+
+lua << EOF
+require("nvim-tree").setup({
+  view = {
+    width = 40,
+  },
+})
+
+EOF
 
 lua << EOF
 local nvim_lsp = require('lspconfig')
