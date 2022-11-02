@@ -16,5 +16,16 @@ set -x CMAKE_C_COMPILER_LAUNCHER sccache
 set -x CMAKE_CXX_COMPILER_LAUNCHER sccache
 set -x CMAKE_GENERATOR Ninja
 
+# aliases
+
+# On ubuntu `bat` is installed as `batcat` due to a name clash
+# with another package.
+alias cat=batcat
+
 # direnv hooks
 direnv hook fish | source
+
+# starship
+# starship init fish | source
+
+set -q GHCUP_INSTALL_BASE_PREFIX[1]; or set GHCUP_INSTALL_BASE_PREFIX $HOME ; set -gx PATH $HOME/.cabal/bin /home/parallels/.ghcup/bin $PATH # ghcup-env
