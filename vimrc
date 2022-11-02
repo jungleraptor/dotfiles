@@ -25,5 +25,8 @@ set rtp+=~/.fzf
 set undodir=~/.vimdid
 set undofile
 
+" Judge me!
+set mouse=a
+
 set background=dark
 let g:lightline = { 'colorscheme': 'one', }
