@@ -1,2 +1,7 @@
 vim/plugged
 nvim/shada/
+nvim/site/autoload/plug.vim
+nvim/plugged/
+nvim/site/
+nvim/.net*
+nvim/rplugin.vim
