@@ -10,7 +10,7 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'peterhoeg/vim-qml'
 Plug 'hashivim/vim-terraform'
-Plug 'mhartington/oceanic-next'
+Plug 'Mofiqul/dracula.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'kyazdani42/nvim-tree.lua'
 
@@ -100,6 +100,6 @@ if (empty($TMUX))
   endif
 endif
 
-colorscheme OceanicNext
+colorscheme dracula
 
 source ~/.vimrc
