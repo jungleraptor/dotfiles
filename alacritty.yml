@@ -3,16 +3,19 @@ shell:
 
 font:
   normal:
-    family: "Hack"
+    family: "Hack Nerd Font Mono"
     style: Regular
   bold:
-    family: "Hack"
+    family: "Hack Nerd Font Mono"
     style: Bold
   italic:
-    family: "Hack"
+    family: "Hack Nerd Font Mono"
     style: Italic
   bold_italic:
-    family: "Hack"
+    family: "Hack Nerd Font Mono"
     style: Bold Italic
 
-  size: 16.0
+  size: 12.0
+
+import:
+  - ~/.config/alacritty/dracula.yml
