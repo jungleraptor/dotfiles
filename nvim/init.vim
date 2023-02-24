@@ -75,11 +75,6 @@ for _, lsp in ipairs(servers) do
   }
 end
 
-local saga = require 'lspsaga'
-
-saga.init_lsp_saga {
-}
-
 require'nvim-treesitter.configs'.setup {
   highlight = {
     enable = true,
