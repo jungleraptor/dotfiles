@@ -13,14 +13,12 @@ Plug 'hashivim/vim-terraform'
 Plug 'Mofiqul/dracula.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'kyazdani42/nvim-tree.lua'
-Plug 'ggandor/leap.nvim'
+Plug 'tpope/vim-unimpaired'
 
 call plug#end()
 
 nnoremap <silent> <C-f> :Files<CR>
 nnoremap <silent> <C-e> :NvimTreeToggle<CR>
-
-lua require('leap').add_default_mappings()
 
 lua << EOF
 require("nvim-tree").setup({
