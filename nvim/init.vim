@@ -17,8 +17,11 @@ Plug 'tpope/vim-unimpaired'
 
 call plug#end()
 
-nnoremap <silent> <C-f> :Files<CR>
-nnoremap <silent> <C-e> :NvimTreeToggle<CR>
+" Space as <leader> key
+let g:mapleader = "\<Space>"
+
+nnoremap <silent> <leader>f :Files<CR>
+nnoremap <silent> <leader>e :NvimTreeToggle<CR>
 
 lua << EOF
 require("nvim-tree").setup({
@@ -43,7 +46,7 @@ local on_attach = function(client, bufnr)
 
   -- Mappings.
   local opts = { noremap=true, silent=true }
-  vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts)
+ -- vim.keymap.set('n', '<space>e', vim.diagnostic.open_float, opts) TODO: remap
 
   -- See `:help vim.lsp*` for documentation on any of the below functions
   buf_set_keymap('n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
@@ -57,7 +60,7 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<C-R>', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
   buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
-  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+--  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts) TODO: remap
 
 end
 
