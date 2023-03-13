@@ -17,6 +17,7 @@ set -x CMAKE_CXX_COMPILER_LAUNCHER sccache
 set -x CMAKE_GENERATOR Ninja
 
 # aliases
+alias vim=nvim
 
 # On ubuntu `bat` is installed as `batcat` due to a name clash
 # with another package.
