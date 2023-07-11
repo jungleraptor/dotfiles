@@ -10,7 +10,8 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'peterhoeg/vim-qml'
 Plug 'hashivim/vim-terraform'
-Plug 'Mofiqul/dracula.nvim'
+" Plug 'Mofiqul/dracula.nvim'
+Plug 'NTBBloodbath/doom-one.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'kyazdani42/nvim-tree.lua'
 Plug 'tpope/vim-unimpaired'
@@ -86,6 +87,6 @@ EOF
 
 set termguicolors
 
-colorscheme dracula
+colorscheme doom-one
 
 source ~/.vimrc
