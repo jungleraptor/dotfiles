@@ -31,8 +31,8 @@ set noshowmode
 set rtp+=~/.fzf
 
 " Persistent undo
-set undodir=~/.vimdid
-set undofile
+" set undodir=~/.vimdid
+" set undofile
 
 " Judge me!
 set mouse=a
