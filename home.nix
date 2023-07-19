@@ -20,9 +20,29 @@
   # Let Home Manager install and manage itself.
   programs.home-manager.enable = true;
 
-#  programs.neovim = {
-#    enable = true;
-#  };
+  programs.starship = {
+    enable = true;
+    settings = {
+      aws = {
+        format = "on [$symbol$profile]($style) ";
+      };
+      directory = {
+        truncate_to_repo = false;
+      };
+      git_status = {
+        disabled = true;
+      };
+      git_branch = {
+        format = "on [$symbol$branch]($style) ";
+      };
+      python = {
+        disabled = true;
+      };
+      cmake = {
+        disabled = true;
+      };
+    };
+  };
 
   programs.tmux = {
     enable = true;
