@@ -24,6 +24,32 @@
     enable = true;
   };
 
+  programs.git = {
+    enable = true;
+    lfs.enable = true;
+    userEmail = "isaac@isaactorz.dev";
+    userName = "Isaac Torres";
+    includes = [
+      { path = "~/.gitconfig.local"; }
+    ];
+    extraConfig = {
+      core = {
+        editor = "nvim";
+      };
+      credential = {
+        "https://gist.github.com" = {
+          helper = "!/usr/bin/gh auth git-credential";
+        };
+        "https://github.com" = {
+          helper = "!/usr/bin/gh auth git-credential";
+        };
+      };
+      init = {
+        defaultBranch = "main";
+      };
+    };
+  };
+
   programs.starship = {
     enable = true;
     settings = {
