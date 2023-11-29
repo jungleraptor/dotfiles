@@ -15,6 +15,7 @@ Plug 'NTBBloodbath/doom-one.nvim'
 Plug 'kyazdani42/nvim-web-devicons'
 Plug 'kyazdani42/nvim-tree.lua'
 Plug 'tpope/vim-unimpaired'
+Plug 'github/copilot.vim'
 
 call plug#end()
 
