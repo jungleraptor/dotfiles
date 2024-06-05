@@ -18,9 +18,12 @@ set -x CMAKE_GENERATOR Ninja
 # aliases
 alias vim=nvim
 
+# for some reason this is necessary to make tmux true color work inside of docker.
+alias tmux="TERM=xterm-256color command tmux"
+
 # On ubuntu `bat` is installed as `batcat` due to a name clash
 # with another package.
-alias cat=batcat
+# alias cat=batcat
 
 # direnv hooks
 # direnv hook fish | source
