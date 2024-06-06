@@ -7,6 +7,12 @@ set PATH $HOME/.local/bin $PATH
 
 set PATH $HOME/bin $PATH
 
+set PATH /home/linuxbrew/.linuxbrew/bin $PATH
+
+set -x GHUSER isaactorz
+
+set -x USE_GKE_GCLOUD_AUTH_PLUGIN True
+
 # fzf
 set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
 
@@ -21,9 +27,7 @@ alias vim=nvim
 # for some reason this is necessary to make tmux true color work inside of docker.
 alias tmux="TERM=xterm-256color command tmux"
 
-# On ubuntu `bat` is installed as `batcat` due to a name clash
-# with another package.
-# alias cat=batcat
+alias cat=bat
 
 # direnv hooks
 # direnv hook fish | source
