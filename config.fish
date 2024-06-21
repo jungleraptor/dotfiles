@@ -30,7 +30,7 @@ alias tmux="TERM=xterm-256color command tmux"
 alias cat=bat
 
 # direnv hooks
-# direnv hook fish | source
+ direnv hook fish | source
 
 # starship
 starship init fish | source
