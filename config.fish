@@ -22,6 +22,8 @@ set -x CMAKE_C_COMPILER_LAUNCHER sccache
 set -x CMAKE_CXX_COMPILER_LAUNCHER sccache
 set -x CMAKE_GENERATOR Ninja
 
+set -x BAZEL_PROFILE buildbarn
+
 # aliases
 alias vim=nvim
 
