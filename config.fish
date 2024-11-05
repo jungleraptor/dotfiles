@@ -14,6 +14,7 @@ set -x GHUSER isaactorz
 set -x USE_GKE_GCLOUD_AUTH_PLUGIN True
 
 # fzf
+set -x FZF_DEFAULT_COMMAND "rg --files --hidden --follow --glob '!.git'"
 set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
 
 # cmake defaults
