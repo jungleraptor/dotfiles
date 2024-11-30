@@ -42,6 +42,8 @@ if maparg('<C-L>', 'n') ==# ''
   nnoremap <silent> <C-L> :nohlsearch<C-R>=has('diff')?'<Bar>diffupdate':''<CR><CR><C-L>
 endif
 
+inoremap {<CR> {<CR>}<C-o>O
+
 nnoremap <silent> <C-j> <C-e>
 
 nnoremap <silent> <C-k> <C-y>
