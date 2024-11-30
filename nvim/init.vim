@@ -259,6 +259,53 @@ require'nvim-treesitter.configs'.setup {
   highlight = {
     enable = true,
   },
+
+  textobjects = {
+    select = {
+      enable = true,
+      lookahead = true,
+
+      keymaps = {
+        ['aa'] = '@parameter.outer',
+        ['ia'] = '@parameter.inner',
+      },
+    },
+    move = {
+      enable = true,
+      set_jumps = true, -- Set jumps in the jumplist
+
+      goto_next_start = {
+        [']a'] = '@parameter.inner',
+      },
+      goto_next_end = {
+        [']A'] = '@parameter.inner',
+      },
+      goto_previous_start = {
+        ['[a'] = '@parameter.inner',
+      },
+      goto_previous_end = {
+        ['[A'] = '@parameter.inner',
+      },
+    },
+  },
+--  textobjects = {
+--    select = {
+--      enable = true,
+--      lookahead = true
+--
+--      keymaps = {
+--        ['aa'] = '@parameter.outer',
+--        ['ia'] = '@parameter.inner',
+--      },
+--    },
+--    move = {
+--      enable = true,
+--      set_jumps = true, -- Set jumps in the jumplist
+--      goto_next_start = {
+--          [']a'] = '@parameter.outer',
+--      },
+--    }, 
+--  },
 }
 
 EOF
