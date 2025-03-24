@@ -1,0 +1,8 @@
+brew "starship"
+brew "neovim"
+brew "fish"
+brew "tmux"
+brew "direnv"
+brew "llvm"
+brew "nodejs"
+brew "bat"
