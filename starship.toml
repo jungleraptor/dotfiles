@@ -1,0 +1,36 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+[directory]
+truncate_to_repo = false
+
+[git_status]
+disabled = true
+
+[git_branch]
+format = "on [$symbol$branch]($style) "
+
+[python]
+disabled = true
+
+[cmake]
+disabled = true
+
+[gcloud]
+disabled = true
+
+[golang]
+disabled = true
+
+[rust]
+disabled = true
+
+[env_var.BAZEL_PROFILE]
+default = 'buildbarn'
+format = "with [$symbol $env_value](blue bold) "
+symbol = ""
+
+#[hostname]
+#ssh_only = false
+#format = '[$ssh_symbol](bold blue) on [$hostname](bold red) '
+#trim_at = '.companyname.com'
+#disabled = false
