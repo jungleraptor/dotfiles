@@ -20,6 +20,7 @@ fish: bundle
 vim: bundle
 	curl -fLo ~/.vim/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 	/home/linuxbrew/.linuxbrew/bin/nvim --headless +PlugInstall +qall
+	/home/linuxbrew/.linuxbrew/bin/nvim --headless +TSUpdateSync +qa
 
 tmux: dotbot
 	test -d ~/.tmux/plugins/tpm || git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm

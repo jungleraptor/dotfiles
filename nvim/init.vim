@@ -281,6 +281,19 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
   },
 
+  ensure_installed = { 
+    "c",
+    "cpp",
+    "rust",
+    "python",
+    "yaml",
+  },
+
+  -- enables installing parsers from the cmdline but will
+  -- still download async when nvim runs interactively:
+  -- https://github.com/nvim-treesitter/nvim-treesitter/issues/3579
+  sync_install = #vim.api.nvim_list_uis() == 0,
+
   textobjects = {
     select = {
       enable = true,
