@@ -27,15 +27,20 @@ Plug 'kyazdani42/nvim-tree.lua'
 Plug 'tpope/vim-unimpaired'
 Plug 'tpope/vim-dispatch'
 Plug 'github/copilot.vim'
+Plug 'augmentcode/augment.vim'
 
 call plug#end()
 
 " Space as <leader> key
 let g:mapleader = "\<Space>"
 
+let g:augment_workspace_folders = ['~/enfabrica/internal-worktree/master']
+let g:augment_disable_tab_mapping = v:true
+
 nnoremap <silent> <leader>f :Files<CR>
 nnoremap <silent> <leader>e :NvimTreeToggle<CR>
 nnoremap <silent> <leader>s :ClangdSwitchSourceHeader<CR>
+inoremap <c-y> <cmd>call augment#Accept()<cr>
 
 lua << EOF
 require("nvim-tree").setup({
@@ -155,15 +160,15 @@ cmp.setup.cmdline({ '/', '?' }, {
 })
 
 -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-cmp.setup.cmdline(':', {
-  mapping = cmp.mapping.preset.cmdline(),
-  sources = cmp.config.sources({
-    { name = 'path' }
-  }, {
-    { name = 'cmdline' }
-  }),
-  matching = { disallow_symbol_nonprefix_matching = false }
-})
+--cmp.setup.cmdline(':', {
+--  mapping = cmp.mapping.preset.cmdline(),
+--  sources = cmp.config.sources({
+--    { name = 'path' }
+--  }, {
+--    { name = 'cmdline' }
+--  }),
+--  matching = { disallow_symbol_nonprefix_matching = false }
+--})
 
 -- Set up lspconfig.
 local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -202,14 +207,30 @@ end
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'clangd' }
+local servers = { 'pyright', 'rust_analyzer', 'clangd', 'lua_ls' }
 for _, lsp in ipairs(servers) do
   nvim_lsp[lsp].setup {
     capabilities = capabilities,
     on_attach = on_attach,
     flags = {
       debounce_text_changes = 150,
-    }
+    },
+    settings = {
+        ["rust-analyzer"] = {
+            linkedProjects = {"./rust-project.json"}
+            }
+
+    },
+    cmd = {
+--        "/home/isaac/.local/bin/clangd_19.1.0/bin/clangd",
+        "clangd",
+        "--offset-encoding=utf-16",
+        "--clang-tidy=false",
+        "--header-insertion=never",
+        "--query-driver=**",
+--        "--remote-index-address=localhost:16000",
+--        "--project-root=/home/isaac/enfabrica/internal-worktree/hermetic-gcc",
+    },
   }
 end
 
@@ -268,6 +289,8 @@ require'nvim-treesitter.configs'.setup {
       keymaps = {
         ['aa'] = '@parameter.outer',
         ['ia'] = '@parameter.inner',
+        ['af'] = '@function.outer',
+        ['if'] = '@function.inner',
       },
     },
     move = {
