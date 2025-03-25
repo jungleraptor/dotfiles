@@ -5,6 +5,7 @@ pyyaml:
 
 dotbot: pyyaml
 	mkdir -p ~/.config/fish/completions
+	mkdir ~/.config/clangd
 	./install
 
 brew: dotbot
