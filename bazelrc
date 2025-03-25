@@ -1,0 +1,18 @@
+# when pipeing bazel query output to bazel build
+build --build_tag_filters=-broken,-no-presubmit,-no-postsubmit
+# disable medium/long running tests from running locally
+test --test_size_filters=-large,-enormous
+test --test_size_filters=-enormous
+#test --test_timeout_filters=-long,-eternal
+#test --test_timeout_filters=-eternal
+#test --test_tag_filters=-broken,-manual,-no-presubmit,-no-postsubmit
+
+# Timestamps clutter quickfix list output
+common --show_timestamps=false
+
+#build --override_repository=rules_pkg=/home/isaac/bazelbuild/rules_pkg
+#build --override_repository=rules_foreign_cc=/home/isaac/bazelbuild/rules_foreign_cc
+#build --override_repository=enkit=/home/isaac/enfabrica/enkit
+#build --override_repository=com_google_absl=/home/isaac/abseil/abseil-cpp
+#build --override_repository=rules_rust=/home/isaac/scratch
+build --remote_cache=grpc://localhost:8981

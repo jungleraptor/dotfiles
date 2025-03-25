@@ -5,6 +5,7 @@
 - clean: ['~']
 
 - link:
+    ~/.bazelrc: bazelrc
     ~/.config/fish/config.fish : config.fish
     ~/.config/fish/completions/bazel.fish : bazel.fish
     ~/.config/nvim : nvim
