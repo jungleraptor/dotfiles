@@ -284,6 +284,10 @@ require'nvim-treesitter.configs'.setup {
   ensure_installed = { 
     "c",
     "cpp",
+    "fish",
+    "jsonnet",
+    "lua",
+    "starlark",
     "rust",
     "python",
     "yaml",
