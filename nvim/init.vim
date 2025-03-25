@@ -34,7 +34,7 @@ call plug#end()
 " Space as <leader> key
 let g:mapleader = "\<Space>"
 
-let g:augment_workspace_folders = ['~/enfabrica/internal-worktree/master']
+let g:augment_workspace_folders = ['~/enfabrica/internal/master']
 let g:augment_disable_tab_mapping = v:true
 
 nnoremap <silent> <leader>f :Files<CR>
