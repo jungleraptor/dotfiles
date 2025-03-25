@@ -8,10 +8,8 @@
     ~/.config/fish/config.fish : config.fish
     ~/.config/fish/completions/bazel.fish : bazel.fish
     ~/.config/nvim : nvim
-    ~/.config/fish/fish_plugins : fish_plugins
     ~/.config/starship.toml: starship.toml
     ~/.gitconfig : gitconfig
-    ~/.local/share/nvim : nvim
     ~/.vim: vim
     ~/.vimrc: vimrc
     ~/.tmux.conf: tmux.conf
