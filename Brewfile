@@ -1,6 +1,7 @@
 brew "starship"
 brew "neovim"
 brew "fish"
+brew "fzf"
 brew "tmux"
 brew "direnv"
 brew "llvm"
