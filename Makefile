@@ -22,6 +22,5 @@ vim: bundle
 	/home/linuxbrew/.linuxbrew/bin/nvim --headless +PlugInstall +qall
 
 tmux: dotbot
-	# FIXME - this step isn't idempotent
-	git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+	test -d ~/.tmux/plugins/tpm || git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
 	env PATH=/home/linuxbrew/.linuxbrew/bin:$$PATH ~/.tmux/plugins/tpm/scripts/install_plugins.sh
