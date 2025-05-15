@@ -40,7 +40,11 @@ let g:augment_disable_tab_mapping = v:true
 nnoremap <silent> <leader>f :Files<CR>
 nnoremap <silent> <leader>e :NvimTreeToggle<CR>
 nnoremap <silent> <leader>s :ClangdSwitchSourceHeader<CR>
+nnoremap <silent> <leader>p :echo expand('%:p')<CR>
 inoremap <c-y> <cmd>call augment#Accept()<cr>
+
+set grepprg=rg\ --vimgrep\ --smart-case\ --hidden
+set grepformat=%f:%l:%c:%m
 
 lua << EOF
 require("nvim-tree").setup({
