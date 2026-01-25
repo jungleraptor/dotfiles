@@ -10,7 +10,7 @@ disabled = true
 format = "on [$symbol$branch]($style) "
 
 [python]
-disabled = true
+format = 'via [${symbol}${pyenv_prefix}($virtualenv )]($style)'
 
 [cmake]
 disabled = true
@@ -24,8 +24,7 @@ disabled = true
 [rust]
 disabled = true
 
-[env_var.BAZEL_PROFILE]
-default = 'buildbarn'
+[env_var.P4CLIENT]
 format = "with [$symbol $env_value](blue bold) "
 symbol = ""
 

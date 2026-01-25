@@ -11,5 +11,5 @@
 	helper = !/usr/bin/gh auth git-credential
 [init]
 	defaultBranch = main
-[includeIf "gitdir:~/enfabrica/"]
-        path = ~/.gitconfig.enf
+[includeIf "gitdir:~/Perforce/"]
+        path = ~/.gitconfig.nv
