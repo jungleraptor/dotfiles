@@ -204,10 +204,15 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', '<C-R>', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
   buf_set_keymap('n', '<space>ca', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
   buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+  -- Map <leader>f to format the current buffer
 --  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts) TODO: remap
   vim.lsp.inlay_hint.enable(true)
 
 end
+
+vim.keymap.set({'n', 'v'}, '<leader>w', function()
+  vim.lsp.buf.format({ async = true })
+end, { desc = 'Format buffer with LSP' })
 
 -- Use a loop to conveniently call 'setup' on multiple servers and
 -- map buffer local keybindings when the language server attaches
