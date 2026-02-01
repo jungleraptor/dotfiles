@@ -356,6 +356,7 @@ EOF
 
 set termguicolors
 
+let g:doom_one_cursor_coloring = v:true
 colorscheme doom-one
 
 source ~/.vimrc
