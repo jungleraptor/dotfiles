@@ -2,6 +2,8 @@ set PATH /home/linuxbrew/.linuxbrew/bin $PATH
 
 set PATH $HOME/.local/bin $PATH
 
+set PATH $PATH /usr/local/cuda/bin
+
 # fzf
 set -x FZF_DEFAULT_COMMAND "rg --files --hidden --follow --glob '!.git'"
 set -x FZF_DEFAULT_OPTS "--height 40% --reverse"
