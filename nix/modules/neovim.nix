@@ -1,12 +1,4 @@
 { pkgs, editorPkgs, ... }:
-let
-  lspCommands = {
-    clangd = "${pkgs.clang-tools}/bin/clangd";
-    pyright = "${pkgs.pyright}/bin/pyright-langserver";
-    rust_analyzer = "${pkgs.rust-analyzer}/bin/rust-analyzer";
-    lua_ls = "${pkgs.lua-language-server}/bin/lua-language-server";
-  };
-in
 {
   programs.neovim = {
     enable = true;
@@ -15,6 +7,7 @@ in
     vimAlias = true;
     withPython3 = false;
     withRuby = false;
+    withNodeJs = false;
     extraPackages = with pkgs; [
       ripgrep
       fzf
@@ -56,13 +49,6 @@ in
       lightline-vim
       vim-fugitive
     ];
-    extraConfig = ''
-      lua << EOF
-      vim.g.dotfiles_lsp_commands = vim.json.decode([==[${builtins.toJSON lspCommands}]==])
-      EOF
-    ''
-    + builtins.readFile ../../vimrc
-    + "\n"
-    + builtins.readFile ../../nvim/init.vim;
+    extraConfig = builtins.readFile ../../vimrc + "\n" + builtins.readFile ../../nvim/init.vim;
   };
 }

@@ -181,12 +181,12 @@ vim.keymap.set({'n', 'v'}, '<leader>w', function()
   vim.lsp.buf.format({ async = true })
 end, { desc = 'Format buffer with LSP' })
 
+-- Language servers come from the system or the project's PATH, not Home Manager.
 -- Each server gets its own executable; clangd flags must not reach the others.
-local commands = vim.g.dotfiles_lsp_commands
 local servers = {
-  pyright = { cmd = { commands.pyright, '--stdio' } },
+  pyright = { cmd = { 'pyright-langserver', '--stdio' } },
   rust_analyzer = {
-    cmd = { commands.rust_analyzer },
+    cmd = { 'rust-analyzer' },
     on_new_config = function(server_config, root_dir)
       local project = root_dir .. '/rust-project.json'
       if vim.uv.fs_stat(project) then
@@ -198,14 +198,14 @@ local servers = {
   },
   clangd = {
     cmd = {
-      commands.clangd,
+      'clangd',
       '--offset-encoding=utf-16',
       '--clang-tidy=false',
       '--header-insertion=never',
       '--query-driver=**',
     },
   },
-  lua_ls = { cmd = { commands.lua_ls } },
+  lua_ls = { cmd = { 'lua-language-server' } },
 }
 
 -- Optional machine/project overrides, evaluated at runtime, outside the store.
@@ -216,7 +216,11 @@ if vim.fn.filereadable(local_config) == 1 then
 end
 
 for name, server in pairs(servers) do
+  -- Missing optional servers should not produce startup errors when opening files.
+  -- Check after local overrides so absolute paths work as well as PATH commands.
+  local available = type(server.cmd) ~= 'table' or vim.fn.executable(server.cmd[1]) == 1
   nvim_lsp[name].setup(vim.tbl_deep_extend('force', {
+    autostart = available,
     capabilities = capabilities,
     on_attach = on_attach,
     flags = { debounce_text_changes = 150 },

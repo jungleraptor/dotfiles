@@ -1,13 +1,6 @@
-{ pkgs, ... }:
+{ ... }:
 {
-  # Editor/runtime tools. Project compilers and environments stay project-owned.
-  home.packages = with pkgs; [
-    clang-tools
-    llvm
-    pyright
-    rust-analyzer
-    lua-language-server
-  ];
+  # Keep editor configuration here; toolchains and language servers are external.
   home.file.".vimrc".source = ../../vimrc;
   home.file.".vim".source = ../../vim;
 }

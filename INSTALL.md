@@ -57,8 +57,8 @@ Implementation checks passed: evaluation of all four profiles and all platform
 checks, Nix formatting, bootstrap syntax/reuse, Fish 4.7.1 syntax, and an isolated
 Neovim 0.11.7 check using the locked plugin sources and nine compiled parsers.
 The isolated editor check covered mappings, queries, server command selection,
-and the LSP attachment callback. It did not test Nix-built language-server binaries
-or an activated home; those require the full package build below.
+and the LSP attachment callback. It did not test an activated home or connections
+to real language servers; servers and toolchains are now supplied externally.
 
 Public Nix downloads failed during TLS on the Research boxes, including a regular
 Brix devbox on `f81`. Changing the pool's sandbox setting did not restore access.
@@ -129,8 +129,8 @@ nix flake check "path:$PWD"
 ```
 
 The editor check loads the configured plugins, parsers, queries, mappings, and
-language-server commands. Test language-server behavior with your projects'
-toolchains after activation.
+optional language-server settings. It does not require installed language servers.
+Test language-server behavior with your projects' toolchains after activation.
 
 ### Build on Applied and export for Brix
 
@@ -321,7 +321,16 @@ Login-shell changes are deliberately separate. You can configure your terminal
 to start the profile's Fish binary without changing `/etc/shells` or `chsh`.
 
 Check `type -a nvim fish git`, start tmux, and open representative Python, Rust,
-C++, and Lua projects. C++ still needs a suitable `compile_commands.json`. Rust
+C++, and Lua projects. Home Manager does not install LLVM/Clang, compilers,
+language servers, or standalone Python/Node/Rust toolchains. Neovim uses
+`clangd`, `pyright-langserver`, `rust-analyzer`, and `lua-language-server` from
+PATH, or the executable paths in `lsp-local.lua`. Missing servers do not autostart;
+syntax highlighting and non-LSP completion remain available. Launch Neovim from
+the project's environment, and restart it after installing a server or changing
+PATH. Plugins and precompiled Tree-sitter parsers remain Nix-managed; their build
+dependencies are separate from the tools installed into your home environment.
+
+C++ still needs a suitable `compile_commands.json`. Rust
 uses `rust-project.json` when present at the project root, otherwise normal
 Cargo discovery. Python uses your project's Python environment. The tools do
 not replace project build systems or install CUDA.

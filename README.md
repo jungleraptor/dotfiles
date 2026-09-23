@@ -12,7 +12,7 @@ separate steps so you can inspect the result before changing your home directory
 - `flake.nix` / `flake.lock`: pinned Home Manager, Nixpkgs, and editor dependencies.
 - `home.nix`: shared modules and migration checks.
 - `nix/profiles/`: username, home directory, and platform selection.
-- `nix/modules/`: Fish, Starship, direnv, fzf, Git, tmux, Neovim, and development tools.
+- `nix/modules/`: Fish, Starship, direnv, fzf, Git, tmux, Neovim, and Vim configuration.
 - `nix/platforms/`: Linux CUDA PATH support and platform-specific clangd locations.
 - `nvim/init.vim` / `vimrc`: editor behavior, kept in Vimscript and Lua.
 - `bootstrap`: installs or reuses Nix only; never activates dotfiles.
@@ -24,8 +24,13 @@ Neovim uses a separately pinned Nixpkgs 25.11 package set to retain Neovim 0.11
 and the legacy Tree-sitter API. Plugins, parser sources, and native dependencies
 are pinned together. Normal packages and Home Manager follow 26.05.
 
-Git credentials, project toolchains, CUDA, desktop applications, and login-shell
-selection remain machine-owned. Runtime overrides live in `~/.local.fish`,
+Compilers, toolchains, and language servers are provided by the system or project
+environment. Neovim finds servers on PATH and only autostarts those available
+when it launches. Home Manager supplies the editor, plugins, and compiled syntax
+parsers, without installing development toolchains.
+
+Git credentials, CUDA, desktop applications, and login-shell selection remain
+machine-owned. Runtime overrides live in `~/.local.fish`,
 `~/.gitconfig.local`, and `~/.config/nvim/lsp-local.lua`.
 
 The old Makefile, Brewfile, and Dotbot installer remain as migration references.

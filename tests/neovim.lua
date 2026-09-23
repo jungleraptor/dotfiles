@@ -27,9 +27,10 @@ local ok, err = pcall(function()
     rust_analyzer = 'rust-analyzer', lua_ls = 'lua-language-server',
   }
   for name, executable in pairs(expected) do
-    local command = configs[name].manager.config.cmd[1]
-    assert(vim.fn.fnamemodify(command, ':t') == executable, name .. ' launches the wrong server')
-    assert(vim.fn.executable(command) == 1, name .. ' executable is missing')
+    local config = configs[name].manager.config
+    assert(config.cmd[1] == executable, name .. ' must use the server from PATH')
+    assert(config.autostart == (vim.fn.executable(executable) == 1),
+      name .. ' should only autostart when its executable is available')
   end
   local buffer = vim.api.nvim_create_buf(false, true)
   configs.pyright.manager.config.on_attach({
@@ -50,6 +51,6 @@ if not ok then
   io.stderr:write(tostring(err) .. '\n')
   vim.cmd('cquit 1')
 else
-  print('Neovim plugins, parsers, mappings and language-server commands passed')
+  print('Neovim plugins, parsers, mappings and optional language-server configuration passed')
   vim.cmd('qa!')
 end
