@@ -1,34 +1,4 @@
-set runtimepath^=~/.vim runtimepath+=~/.vim/after
-let &packpath = &runtimepath
-
-call plug#begin()
-
-Plug 'neovim/nvim-lspconfig'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'hrsh7th/cmp-buffer'
-Plug 'hrsh7th/cmp-path'
-Plug 'hrsh7th/cmp-cmdline'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'L3MON4D3/LuaSnip'
-Plug 'saadparwaiz1/cmp_luasnip'
-Plug 'rafamadriz/friendly-snippets'
-Plug 'dgagn/diagflow.nvim'
-Plug 'glepnir/lspsaga.nvim'
-Plug 'nvim-treesitter/nvim-treesitter', { 'branch': 'master', 'do': ':TSUpdate'}
-Plug 'nvim-treesitter/nvim-treesitter-textobjects'
-Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
-Plug 'junegunn/fzf.vim'
-Plug 'peterhoeg/vim-qml'
-Plug 'hashivim/vim-terraform'
-" Plug 'Mofiqul/dracula.nvim'
-Plug 'NTBBloodbath/doom-one.nvim'
-Plug 'kyazdani42/nvim-web-devicons'
-Plug 'kyazdani42/nvim-tree.lua'
-Plug 'tpope/vim-unimpaired'
-Plug 'tpope/vim-dispatch'
-Plug 'github/copilot.vim'
-
-call plug#end()
+" Plugins and parsers are supplied by Home Manager (nix/modules/neovim.nix).
 
 " Space as <leader> key
 let g:mapleader = "\<Space>"
@@ -201,7 +171,9 @@ local on_attach = function(client, bufnr)
   buf_set_keymap('n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
   -- Map <leader>f to format the current buffer
 --  buf_set_keymap('n', '<space>f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts) TODO: remap
-  vim.lsp.inlay_hint.enable(true)
+  if client:supports_method('textDocument/inlayHint') then
+    vim.lsp.inlay_hint.enable(true, { bufnr = bufnr })
+  end
 
 end
 
@@ -209,33 +181,46 @@ vim.keymap.set({'n', 'v'}, '<leader>w', function()
   vim.lsp.buf.format({ async = true })
 end, { desc = 'Format buffer with LSP' })
 
--- Use a loop to conveniently call 'setup' on multiple servers and
--- map buffer local keybindings when the language server attaches
-local servers = { 'pyright', 'rust_analyzer', 'clangd', 'lua_ls' }
-for _, lsp in ipairs(servers) do
-  nvim_lsp[lsp].setup {
+-- Each server gets its own executable; clangd flags must not reach the others.
+local commands = vim.g.dotfiles_lsp_commands
+local servers = {
+  pyright = { cmd = { commands.pyright, '--stdio' } },
+  rust_analyzer = {
+    cmd = { commands.rust_analyzer },
+    on_new_config = function(server_config, root_dir)
+      local project = root_dir .. '/rust-project.json'
+      if vim.uv.fs_stat(project) then
+        server_config.settings = server_config.settings or {}
+        server_config.settings['rust-analyzer'] = server_config.settings['rust-analyzer'] or {}
+        server_config.settings['rust-analyzer'].linkedProjects = { project }
+      end
+    end,
+  },
+  clangd = {
+    cmd = {
+      commands.clangd,
+      '--offset-encoding=utf-16',
+      '--clang-tidy=false',
+      '--header-insertion=never',
+      '--query-driver=**',
+    },
+  },
+  lua_ls = { cmd = { commands.lua_ls } },
+}
+
+-- Optional machine/project overrides, evaluated at runtime, outside the store.
+-- Return a table keyed by server name, e.g. { clangd = { cmd = { ... } } }.
+local local_config = vim.fn.stdpath('config') .. '/lsp-local.lua'
+if vim.fn.filereadable(local_config) == 1 then
+  servers = vim.tbl_deep_extend('force', servers, dofile(local_config))
+end
+
+for name, server in pairs(servers) do
+  nvim_lsp[name].setup(vim.tbl_deep_extend('force', {
     capabilities = capabilities,
     on_attach = on_attach,
-    flags = {
-      debounce_text_changes = 150,
-    },
-    settings = {
-        ["rust-analyzer"] = {
-            linkedProjects = {"./rust-project.json"}
-            }
-
-    },
-    cmd = {
---        "/home/isaac/.local/bin/clangd_19.1.0/bin/clangd",
-        "clangd",
-        "--offset-encoding=utf-16",
-        "--clang-tidy=false",
-        "--header-insertion=never",
-        "--query-driver=**",
---        "--remote-index-address=localhost:16000",
---        "--project-root=/home/isaac/enfabrica/internal-worktree/hermetic-gcc",
-    },
-  }
+    flags = { debounce_text_changes = 150 },
+  }, server))
 end
 
 require('diagflow').setup({
@@ -285,22 +270,10 @@ require'nvim-treesitter.configs'.setup {
     enable = true,
   },
 
-  ensure_installed = { 
-    "c",
-    "cpp",
-    "fish",
-    "jsonnet",
-    "lua",
-    "starlark",
-    "rust",
-    "python",
-    "yaml",
-  },
-
-  -- enables installing parsers from the cmdline but will
-  -- still download async when nvim runs interactively:
-  -- https://github.com/nvim-treesitter/nvim-treesitter/issues/3579
-  sync_install = #vim.api.nvim_list_uis() == 0,
+  -- Nix supplies matching prebuilt parsers; never install into the store.
+  ensure_installed = {},
+  auto_install = false,
+  sync_install = false,
 
   textobjects = {
     select = {
@@ -332,24 +305,7 @@ require'nvim-treesitter.configs'.setup {
       },
     },
   },
---  textobjects = {
---    select = {
---      enable = true,
---      lookahead = true
---
---      keymaps = {
---        ['aa'] = '@parameter.outer',
---        ['ia'] = '@parameter.inner',
---      },
---    },
---    move = {
---      enable = true,
---      set_jumps = true, -- Set jumps in the jumplist
---      goto_next_start = {
---          [']a'] = '@parameter.outer',
---      },
---    }, 
---  },
+
 }
 
 EOF
@@ -359,4 +315,4 @@ set termguicolors
 let g:doom_one_cursor_coloring = v:true
 colorscheme doom-one
 
-source ~/.vimrc
+" Shared vimrc settings are loaded first by Home Manager.

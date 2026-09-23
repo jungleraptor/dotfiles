@@ -5,3 +5,5 @@ nvim/plugged/
 nvim/site/
 nvim/.net*
 nvim/rplugin.vim
+result
+result-*

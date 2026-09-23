@@ -27,9 +27,6 @@ set laststatus=2
 " Removes redundant --INSERT--
 set noshowmode
 
-" Fuzzy Find installed via git
-set rtp+=~/.fzf
-
 " Persistent undo
 " set undodir=~/.vimdid
 " set undofile
