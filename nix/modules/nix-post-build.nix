@@ -3,7 +3,7 @@
 
 let
   sudo = lib.optionalString (config.home.username != "root") "sudo ";
-  include = "!include ${config.xdg.configHome}/nix/ncps-post-build.conf";
+  include = "!include ${config.xdg.configHome}/nix/nix.conf";
   hook = pkgs.writeShellScript "ncps-post-build" ''
     set -eu
     set -f
@@ -16,11 +16,11 @@ let
   '';
 in
 {
-  xdg.configFile."nix/ncps-post-build.conf".text = ''
+  xdg.configFile."nix/nix.conf".text = lib.mkAfter ''
     post-build-hook = ${hook}
   '';
 
-  # The daemon needs the hook too, including for builds requested over SSH.
+  # Make these Nix settings available to the daemon for builds requested over SSH.
   home.activation.ncpsPostBuild = lib.hm.dag.entryAfter [ "ncps" "reloadSystemd" ] ''
     if ! grep -qxF '${include}' /etc/nix/nix.custom.conf; then
       run ${sudo}tee -a /etc/nix/nix.custom.conf >/dev/null <<'EOF'

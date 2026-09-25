@@ -5,13 +5,6 @@ let
   database = "sqlite:${data}/db.sqlite";
 in
 {
-  imports = [
-    (import ./ncps-post-build.nix {
-      caches = [ "http://127.0.0.1:8501" ];
-      restartDaemon = true;
-    })
-  ];
-
   systemd.user.enable = lib.mkForce true;
   systemd.user.startServices = true;
 
