@@ -44,6 +44,10 @@
           system = "x86_64-linux";
           profile = ./nix/profiles/linux-user.nix;
         };
+        applied = mkHome {
+          system = "x86_64-linux";
+          profile = ./nix/profiles/applied.nix;
+        };
         brix-root = mkHome {
           system = "x86_64-linux";
           profile = ./nix/profiles/brix-root.nix;
