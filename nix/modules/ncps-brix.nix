@@ -15,8 +15,7 @@ let
       --cache-storage-local=${data} \
       --cache-database-url="$DATABASE_URL" \
       --cache-upstream-url=http://127.0.0.1:8502 \
-      --cache-upstream-public-key=applied:EpR2bpK4ExMQ38bsZmEMGJKo5qC/xboD/knAQMOMzAY= \
-      --cache-allow-put-verb=true
+      --cache-upstream-public-key=applied:EpR2bpK4ExMQ38bsZmEMGJKo5qC/xboD/knAQMOMzAY=
   '';
 
   supervisorConfig = pkgs.writeText "ncps-supervisor.conf" ''
@@ -34,15 +33,6 @@ let
   '';
 in
 {
-  imports = [
-    (import ./ncps-post-build.nix {
-      caches = [
-        "http://127.0.0.1:8501"
-        "http://127.0.0.1:8502"
-      ];
-    })
-  ];
-
   home.activation.ncps = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
     run mkdir -p ${data}
     run ln -sfn ${supervisorConfig} ${supervisor}/conf.d/ncps.conf
