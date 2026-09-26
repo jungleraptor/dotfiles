@@ -16,6 +16,7 @@ let
       ProgramArguments = command;
       RunAtLoad = true;
       EnvironmentVariables.PATH = lib.concatStringsSep ":" [
+        "${config.home.homeDirectory}/.openai/bin"
         "${config.home.homeDirectory}/.brix/bin"
         "${config.home.homeDirectory}/.local/bin"
         "${config.home.homeDirectory}/.nix-profile/bin"
