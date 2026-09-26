@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Install Nix; bootstrap handles Home Manager activation.
+set -euo pipefail
+
+usage() {
+  cat <<'EOF'
+Usage: ./nix/install [--yes]
+
+Install Nix with flakes enabled, or reuse an existing installation.
+--yes skips the Nix installer's interactive confirmation.
+EOF
+}
+
+confirm_yes=0
+case "${1:-}" in
+  --help|-h) usage; exit 0 ;;
+  --yes) confirm_yes=1 ;;
+  '') ;;
+  *) usage >&2; exit 2 ;;
+esac
+if [ "$#" -gt 1 ]; then usage >&2; exit 2; fi
+
+for nix_bin in "$(command -v nix || true)" /nix/var/nix/profiles/default/bin/nix "$HOME/.nix-profile/bin/nix"; do
+  if [ -n "$nix_bin" ] && [ -x "$nix_bin" ]; then
+    "$nix_bin" --version
+    echo 'Using the existing Nix installation.'
+    exit 0
+  fi
+done
+
+installer_version=2.35.2
+installer_args=(install)
+case "$(uname -s)-$(uname -m)" in
+  Darwin-arm64)
+    installer_system=aarch64-darwin
+    installer_sha256=6314b195321b3acc6826b1c5d66bb9cf9306c8231c6dbb745f51a04c3bcee235
+    ;;
+  Linux-x86_64)
+    installer_system=x86_64-linux
+    installer_sha256=5448a1cd70ad945cb4d36365defbaf3731eba38e23859f3dc8bd7418e1946acc
+    ;;
+  Linux-aarch64|Linux-arm64)
+    installer_system=aarch64-linux
+    installer_sha256=a1b35e56da5adadbc117c3cf17b83948ac657f3c0bd79d47bbe0aa70832b5c8e
+    ;;
+  *) echo 'Supported bootstrap targets: Apple Silicon macOS and x86-64/ARM64 Linux.' >&2; exit 1 ;;
+esac
+
+if [ "$(uname -s)" = Linux ]; then
+  installer_args+=(linux)
+  if [ ! -d /run/systemd/system ]; then
+    if [ "$(id -u)" -ne 0 ]; then
+      echo 'Linux without systemd: use an existing Nix installation or provision /nix for a single-user installation. See INSTALL.md.' >&2
+      exit 1
+    fi
+    installer_args+=(--init none)
+  fi
+fi
+
+bootstrap_tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-nix.XXXXXXXX")
+trap 'rm -rf "$bootstrap_tmp_dir"' EXIT
+installer_binary="$bootstrap_tmp_dir/nix-installer"
+curl --fail --location --retry 3 \
+  "https://github.com/NixOS/nix-installer/releases/download/$installer_version/nix-installer-$installer_system" \
+  --output "$installer_binary"
+if command -v sha256sum >/dev/null 2>&1; then
+  installer_actual_sha=$(sha256sum "$installer_binary")
+else
+  installer_actual_sha=$(shasum -a 256 "$installer_binary")
+fi
+if [ "${installer_actual_sha%% *}" != "$installer_sha256" ]; then
+  echo 'Nix installer checksum mismatch.' >&2
+  exit 1
+fi
+chmod +x "$installer_binary"
+if [ "$confirm_yes" -eq 1 ]; then installer_args+=(--no-confirm); fi
+"$installer_binary" "${installer_args[@]}" --enable-flakes --no-modify-profile
+
+echo 'Nix installation finished.'

@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cache="$HOME/code/.nix-cache/ncps"
+if [ ! -d "$cache" ]; then exit 0; fi
+
+repo=$(cd -- "$(dirname -- "$0")/.." && pwd)
+profile=$1
+# Keep ncps itself available before its cache server can start.
+ncps=$(nix eval --raw "path:$repo#homeConfigurations.$profile.pkgs.ncps.outPath")
+if [ -f "$cache/bootstrap/ncps-path" ] && [ "$(cat "$cache/bootstrap/ncps-path")" = "$ncps" ]; then
+  exit 0
+fi
+
+nix copy --to "file://$cache/bootstrap?compression=zstd" "$ncps"
+printf '%s\n' "$ncps" > "$cache/bootstrap/ncps-path"
