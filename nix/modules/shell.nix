@@ -22,7 +22,7 @@
           break
         end
       end
-      fish_add_path --path "$HOME/.nix-profile/bin"
+      fish_add_path --path --move "$HOME/.nix-profile/bin"
       fish_add_path --path --move "$HOME/.local/bin"
     '';
     interactiveShellInit = builtins.readFile ../../config.fish;
