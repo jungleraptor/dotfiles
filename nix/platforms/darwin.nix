@@ -9,9 +9,8 @@
     fish_add_path -gPm \
       "$HOME/.openai/bin" \
       "/Library/Application Support/OpenAI/bin" \
-      "$HOME/code/openai/project/dotslash-gen/bin" \
-      /opt/homebrew/bin \
-      /opt/homebrew/sbin
-    fish_add_path -gPam "$HOME/.cargo/bin"
+      "$HOME/code/openai/project/dotslash-gen/bin"
+    # Prefer Home Manager tools; retain Homebrew for machine-owned packages.
+    fish_add_path -gPam /opt/homebrew/bin /opt/homebrew/sbin "$HOME/.cargo/bin"
   '';
 }
