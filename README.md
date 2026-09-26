@@ -13,7 +13,8 @@ separate steps so you can inspect the result before changing your home directory
 - `home.nix`: shared modules and migration checks.
 - `nix/profiles/`: username, home directory, and platform selection.
 - `nix/modules/`: Fish, Starship, direnv, fzf, Git, tmux, Neovim, and Vim configuration.
-- `nix/platforms/`: Linux CUDA PATH support and platform-specific clangd locations.
+- `nix/platforms/`: Linux CUDA PATH, macOS OpenAI/Homebrew PATH and Alacritty config,
+  and platform-specific clangd locations.
 - `nvim/init.vim` / `vimrc`: editor behavior, kept in Vimscript and Lua.
 - `bootstrap`: installs or reuses Nix only; never activates dotfiles.
 - `nix/cache.py`: builds a checked Brix generation on Applied and exports/imports

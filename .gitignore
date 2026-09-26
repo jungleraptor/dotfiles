@@ -7,3 +7,4 @@ nvim/.net*
 nvim/rplugin.vim
 result
 result-*
+.direnv/

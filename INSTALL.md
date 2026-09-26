@@ -88,6 +88,17 @@ The Mac profile is configured for `isaact`. If a Linux devbox uses another login
 edit both account fields in `nix/profiles/linux-user.nix` to match it. These values
 are explicit configuration, not inferred from the shell running Nix.
 
+On this Mac, use `dotfiles_profile=macbook` in the commands below. Its Fish
+configuration includes the OpenAI helper and Homebrew paths, with Cargo appended.
+Fish loads `~/.openai/shprofile/openai_env_vars` and
+`~/.config/buildkite/api-token` at runtime when readable, and sets
+`PYTHONSAFEPATH=1`. These machine-owned files stay outside the Nix store.
+The OpenAI Python venv is left to each checkout's direnv configuration.
+
+The Mac profile also manages Alacritty's TOML configuration. Install Alacritty
+and Hack Nerd Font Mono separately; the config uses the default login shell
+and does not import the old external Doom One theme.
+
 The examples below use Bash/Zsh and the Brix profile:
 
 ```sh
@@ -284,6 +295,7 @@ dotfiles_backup="$HOME/.local/state/dotfiles-backups/$(date -u +%Y%m%dT%H%M%SZ)-
 mkdir -p "$dotfiles_backup"
 for dotfiles_relative in \
   .config/nvim .config/fish/config.fish \
+  .config/alacritty/alacritty.toml \
   .config/starship.toml .gitconfig .config/git/config .tmux.conf \
   .config/tmux/tmux.conf .vim .vimrc \
   .config/clangd/config.yaml Library/Preferences/clangd/config.yaml

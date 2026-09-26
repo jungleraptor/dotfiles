@@ -24,6 +24,18 @@
       end
       fish_add_path --path --move "$HOME/.nix-profile/bin"
       fish_add_path --path --move "$HOME/.local/bin"
+
+      # Read machine-owned identity and credentials at shell startup, never
+      # during Nix evaluation (which would copy them into the Nix store).
+      if test -r "$HOME/.openai/shprofile/openai_env_vars"
+        source "$HOME/.openai/shprofile/openai_env_vars"
+      end
+      if test -r "$HOME/.config/buildkite/api-token"
+        set -gx BUILDKITE_API_KEY (command cat "$HOME/.config/buildkite/api-token")
+      end
+
+      # Let direnv activate each checkout's venv; retain Python's safety setting.
+      set -gx PYTHONSAFEPATH 1
     '';
     interactiveShellInit = builtins.readFile ../../config.fish;
     shellInitLast = ''
