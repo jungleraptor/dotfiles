@@ -373,6 +373,19 @@ test it over your usual SSH connection. macOS uses its native clipboard support.
 
 ## Updates and rollback
 
+Home Manager records the activated flake profile in
+`~/.config/just/config.just`. From this checkout, `just refresh` reuses that
+profile automatically; `just refresh-remote` uses the same default with the
+existing remote-builder settings. No shell restart or per-checkout envrc is
+needed. These commands activate the configuration.
+
+Use these recipes after the initial Home Manager installation described above.
+That activation writes the selected profile into the required config file, so
+`just refresh` needs no profile argument. If Home Manager was installed before
+this feature, run the switch command in section 5 once to generate the file.
+Explicit overrides such as `just refresh macbook` remain available; a successful
+activation updates the saved default.
+
 Update the main tools independently from the compatibility-pinned editor:
 
 ```sh

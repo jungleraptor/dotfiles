@@ -26,33 +26,43 @@
       ];
       forAllSystems = nixpkgs.lib.genAttrs systems;
       mkHome =
-        { system, profile }:
+        {
+          system,
+          profile,
+          profileName,
+        }:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
           extraSpecialArgs.editorPkgs = nixpkgs-editor.legacyPackages.${system};
           modules = [
             ./home.nix
             profile
+            {
+              xdg.configFile."just/config.just".text = ''
+                # Managed by Home Manager; selected by the activated flake profile.
+                home_profile := ${builtins.toJSON profileName}
+              '';
+            }
           ];
         };
-      homes = {
-        macbook = mkHome {
+      homes = nixpkgs.lib.mapAttrs (profileName: args: mkHome (args // { inherit profileName; })) {
+        macbook = {
           system = "aarch64-darwin";
           profile = ./nix/profiles/macbook.nix;
         };
-        linux-user = mkHome {
+        linux-user = {
           system = "x86_64-linux";
           profile = ./nix/profiles/linux-user.nix;
         };
-        applied = mkHome {
+        applied = {
           system = "x86_64-linux";
           profile = ./nix/profiles/applied.nix;
         };
-        brix-root = mkHome {
+        brix-root = {
           system = "x86_64-linux";
           profile = ./nix/profiles/brix-root.nix;
         };
-        linux-arm = mkHome {
+        linux-arm = {
           system = "aarch64-linux";
           profile = ./nix/profiles/linux-user.nix;
         };
