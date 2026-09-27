@@ -15,7 +15,8 @@ let
       --cache-storage-local=${data} \
       --cache-database-url="$DATABASE_URL" \
       --cache-upstream-url=http://127.0.0.1:8502 \
-      --cache-upstream-public-key=applied:EpR2bpK4ExMQ38bsZmEMGJKo5qC/xboD/knAQMOMzAY=
+      --cache-upstream-public-key=applied:EpR2bpK4ExMQ38bsZmEMGJKo5qC/xboD/knAQMOMzAY= \
+      --cache-allow-put-verb=true
   '';
 
   supervisorConfig = pkgs.writeText "ncps-supervisor.conf" ''
@@ -37,5 +38,8 @@ in
     run mkdir -p ${data}
     run ln -sfn ${supervisorConfig} ${supervisor}/conf.d/ncps.conf
     run ${supervisorctl} update ncps
+    run ${pkgs.curl}/bin/curl --fail --silent --show-error \
+      --retry 10 --retry-connrefused --retry-delay 1 \
+      http://127.0.0.1:8501/nix-cache-info >/dev/null
   '';
 }

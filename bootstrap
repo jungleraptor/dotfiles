@@ -27,7 +27,8 @@ cleanup() {
 }
 trap cleanup EXIT
 
-nix_options=(--extra-experimental-features 'nix-command flakes')
+# The writable cache and its post-build hook become available after activation.
+nix_options=(--extra-experimental-features 'nix-command flakes' --option post-build-hook '')
 cache="$HOME/code/.nix-cache/ncps"
 if [ -d "$cache" ]; then
   starter_cache="file://$cache/bootstrap?trusted=1"
@@ -46,6 +47,7 @@ if [ -d "$cache" ]; then
   fi
   nix_options+=(
     --option substituters "$starter_cache http://127.0.0.1:8501"
+    --option narinfo-cache-negative-ttl 0
     --extra-trusted-public-keys "$(curl --fail --silent --show-error http://127.0.0.1:8501/pubkey)"
     --option builders '' --option max-jobs 1
   )
