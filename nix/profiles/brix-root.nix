@@ -8,4 +8,6 @@
   ];
   home.username = "root";
   home.homeDirectory = "/root";
+  # /root/code survives pod recreation; the default /dev/shm store does not.
+  dotfiles.buildkite.credentialStorePath = "/root/code/.buildkite/credentials.json";
 }

@@ -412,15 +412,42 @@ not replace project build systems or install CUDA.
 
 ### Buildkite OAuth
 
-Install a current `bk` CLI on each machine and authenticate once:
+Home Manager installs the pinned `bk` CLI, including during bootstrap recovery.
+Authenticate separately on each machine:
 
 ```sh
 bk auth login --org openai-mono --scopes "read_only write_builds"
 ```
 
-On a headless Linux box, use `--device --credential-store shm` (available in
-bk 3.59.0). That in-memory store requires login again after the box is restarted.
-Keep the CLI in PATH, for example `~/.local/bin/bk`; it remains machine-owned.
+On Brix, use the device flow:
+
+```sh
+bk auth login --org openai-mono --scopes "read_only write_builds" --device
+```
+
+The Brix profile configures `bk` to keep its OAuth access and refresh tokens in
+`/root/code/.buildkite/credentials.json`, on the persistent volume. The directory
+is private (`0700`) and the file is owner-readable/writable only (`0600`). This
+file contains unencrypted credentials: keep it out of source control and shared
+backups. The CLI writes refreshed tokens directly to this file, so pod recreation
+does not reset the login. Rerun bootstrap to restore the CLI and shell hooks; no
+login is needed unless the credentials have expired or been revoked. The wrapper
+also supplies the default organization if the pod's `bk.yaml` has been lost.
+`bk auth logout` removes the persisted login.
+
+Other profiles keep the native credential store (including the macOS keychain).
+On another headless Linux host without a keyring, the temporary alternative is:
+
+```sh
+bk auth login --org openai-mono --scopes "read_only write_builds" --device --credential-store shm
+```
+
+Approve the device code in your browser. Without the Brix path override, the
+in-memory store requires login again after a restart. The Brix wrapper uses the
+CLI's `BUILDKITE_CREDENTIAL_STORE=shm` backend with
+`BUILDKITE_CREDENTIAL_STORE_PATH` pointing at the persistent file; these defaults
+can be explicitly overridden in the environment. The token helper uses the same
+managed CLI, so it reads and refreshes the same store as interactive `bk` commands.
 
 After activating this configuration, Fish and Bash login shells export
 `BUILDKITE_API_KEY` and `BUILDKITE_TOKEN` from the OAuth store. Fish checks token

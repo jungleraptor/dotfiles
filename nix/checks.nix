@@ -33,3 +33,9 @@ in
     touch "$out"
   '';
 }
+// pkgs.lib.optionalAttrs (cfg.dotfiles.buildkite.credentialStorePath != null) {
+  buildkite = pkgs.runCommand "dotfiles-buildkite-persistence" { } ''
+    ${pkgs.python3}/bin/python3 ${../tests/buildkite.py} ${home.activationPackage}/home-path/bin/bk
+    touch "$out"
+  '';
+}
