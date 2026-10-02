@@ -3,6 +3,7 @@
 {
   imports = [
     ./nix/modules/shell.nix
+    ./nix/modules/buildkite.nix
     ./nix/modules/git.nix
     ./nix/modules/tmux.nix
     ./nix/modules/neovim.nix

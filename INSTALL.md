@@ -1,6 +1,7 @@
 # Installing and learning the Home Manager setup
 
-The steps below are deliberately separate:
+`./bootstrap` runs the complete install, build, and activation flow. The manual
+workflow separates these stages:
 
 1. **Install Nix:** provides the package store and build tool.
 2. **Evaluate/build:** validates configuration and creates a generation in the store.
@@ -17,9 +18,65 @@ On a fresh machine, from this checkout:
 ./bootstrap
 ```
 
-This downloads a checksum-verified NixOS community installer, enables flakes, and
-stops after installing Nix. Use `./bootstrap --yes` for a noninteractive install.
-It reuses an existing Nix installation and does not modify shell startup files.
+This installs Nix if needed, builds the selected profile, and activates Home
+Manager (default: `brix-root`). Use `./bootstrap --yes` to skip the installer's
+confirmation, or `./bootstrap --yes applied` to select another profile.
+To install only Nix without activating dotfiles, run `./nix/install` instead.
+
+After pod recreation, rerun `./bootstrap` from this persistent checkout. When
+`~/code/.nix-cache/ncps` exists, bootstrap restores ncps from its `bootstrap` file
+cache and temporarily serves the persisted cache on port 8501 during the build.
+It stops that process before activation so the managed service can take over.
+Activation uses the restored local closure with substituters and automatic
+post-build uploads disabled for that invocation; its explicit generation upload
+runs after managed ncps is ready. This prevents `nix-env` from contacting port
+8501 during the handoff. Successful bootstrap also saves the ncps closure for
+the next recovery, as does `just refresh`.
+
+If the persisted ncps directory is missing `bootstrap/ncps-path`, restore the
+bootstrap cache from a working machine, or start managed ncps and run
+`./nix/prepare-bootstrap PROFILE` there before the next restart. A bare ncps data
+directory is not enough to restore the proxy after losing `/nix`.
+
+If the local cache is missing packages, opt into recovery through Applied:
+
+```sh
+./bootstrap --use-applied-cache
+# Also accepts --yes and an explicit profile:
+./bootstrap --yes --use-applied-cache brix-root
+```
+
+This assumes the Mac's SSH relay is running on Brix's `127.0.0.1:2222`, and Brix's
+`~/.ssh/id_rsa` and its certificate can authenticate as `isaact` on Applied. The
+Mac profile maintains that relay and renews Brix's certificate. Bootstrap reuses
+an accessible cache tunnel on `127.0.0.1:8502`; otherwise it starts a temporary
+SSH forward on `127.0.0.1:8503` to Applied's `127.0.0.1:8501` through the relay.
+It checks cache metadata and the pinned Applied signing key before installing or
+building anything. SSH or cache failures stop recovery with a diagnostic.
+
+In this mode, bootstrap skips importing or starting the temporary local ncps,
+even if the local cache is absent or incomplete. Both the build and initial
+activation use Applied directly; automatic post-build uploads stay disabled
+until activation finishes. Home Manager still starts the managed local service
+and explicitly uploads the generation, and bootstrap saves the ncps recovery
+closure for subsequent local recovery. Bootstrap keeps its temporary SSH tunnel
+through activation and removes it on success or failure. Using port 8503 leaves
+8502 free for the managed tunnel to start during activation. An existing tunnel
+on 8502 is left running. Plain `./bootstrap` retains local recovery without
+starting a temporary tunnel or checking Applied.
+
+The `brix-root` profile registers an `applied-cache-tunnel` Supervisor service.
+It forwards Brix's `127.0.0.1:8502` to Applied's `127.0.0.1:8501` through SSH on
+port 2222, and retries after disconnects or authentication failures. Activation
+does not wait for Applied during local recovery, so it still works when the Mac
+relay or Applied is down. When bootstrap reuses port 8502, activation waits for
+that tunnel to become ready after any service restart before continuing. Logs
+are kept in `~/code/.nix-cache/ncps/applied-cache-tunnel.log`. The managed tunnel uses the same
+SSH key and renewed certificate as bootstrap; it does not renew credentials.
+
+Applied ncps can supply cached packages and fetch substitutes from its upstream.
+This option does not select a remote builder: packages unavailable from either
+cache can still require a build and source downloads on this machine.
 
 Supported bootstrap targets:
 
@@ -90,9 +147,9 @@ are explicit configuration, not inferred from the shell running Nix.
 
 On this Mac, use `dotfiles_profile=macbook` in the commands below. Its Fish
 configuration includes the OpenAI helper and Homebrew paths, with Cargo appended.
-Fish loads `~/.openai/shprofile/openai_env_vars` and
-`~/.config/buildkite/api-token` at runtime when readable, and sets
-`PYTHONSAFEPATH=1`. These machine-owned files stay outside the Nix store.
+Fish loads `~/.openai/shprofile/openai_env_vars` at runtime when readable and sets
+`PYTHONSAFEPATH=1`. This machine-owned file stays outside the Nix store.
+Buildkite credentials come from the CLI's OAuth store as described below.
 The OpenAI Python venv is left to each checkout's direnv configuration.
 
 The Mac profile also manages Alacritty's TOML configuration. Install Alacritty
@@ -348,6 +405,39 @@ Cargo discovery. Python uses your project's Python environment. The tools do
 not replace project build systems or install CUDA.
 
 ## Local overrides
+
+### Buildkite OAuth
+
+Install a current `bk` CLI on each machine and authenticate once:
+
+```sh
+bk auth login --org openai-mono --scopes "read_only write_builds"
+```
+
+On a headless Linux box, use `--device --credential-store shm` (available in
+bk 3.59.0). That in-memory store requires login again after the box is restarted.
+Keep the CLI in PATH, for example `~/.local/bin/bk`; it remains machine-owned.
+
+After activating this configuration, Fish and Bash login shells export
+`BUILDKITE_API_KEY` and `BUILDKITE_TOKEN` from the OAuth store. Fish checks token
+expiry before commands; Bash checks at login-shell startup. Run
+`buildkite_refresh --force` to refresh an existing shell manually.
+An inherited `BUILDKITE_API_TOKEN` is cleared after a successful refresh so it
+cannot disable the CLI's own OAuth refresh. Failed refreshes clear stale exports.
+
+The Bash hook is appended after existing `.bash_profile` contents, with a one-time
+backup at `.bash_profile.before-buildkite-oauth`. It preserves OpenAI's startup
+loader. Tokens are never evaluated by Nix or saved into this repository; the old
+`~/.config/buildkite/api-token` file is no longer read. Programs already running
+retain their original environment and must obtain fresh credentials themselves.
+
+Activation also sets `features.shell_snapshot = false` in an existing Codex
+configuration (backing it up once to `config.toml.before-buildkite-oauth`). New
+Codex sessions then run normal shell startup for each command instead of reusing
+expiring credentials from a snapshot. Existing Codex sessions can source
+`~/.config/buildkite/oauth-env.sh` before Buildkite commands until restarted.
+Sandboxed commands still need permission to access the CLI's credential store and
+to write refreshed credentials; this setup does not change sandbox permissions.
 
 - `~/.local.fish`: sourced after the shared Fish configuration.
 - `~/.gitconfig.local`: included after the shared Git settings and Perforce include.

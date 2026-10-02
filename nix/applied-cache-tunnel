@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Brix -> Mac's SSH relay -> Applied; the Mac renews id_rsa-cert.pub separately.
+set -euo pipefail
+
+port=${1:-8502}
+exec "${SSH_BIN:-ssh}" -NT -p 2222 \
+  -i "$HOME/.ssh/id_rsa" \
+  -o IdentitiesOnly=yes \
+  -o BatchMode=yes \
+  -o ExitOnForwardFailure=yes \
+  -o ConnectTimeout=10 \
+  -o ConnectionAttempts=1 \
+  -o ServerAliveInterval=15 \
+  -o ServerAliveCountMax=4 \
+  -o RemoteCommand=none \
+  -o ForkAfterAuthentication=no \
+  -o ControlMaster=no \
+  -o ControlPath=none \
+  -L "127.0.0.1:$port:127.0.0.1:8501" \
+  isaact@127.0.0.1

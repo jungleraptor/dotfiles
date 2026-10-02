@@ -2,37 +2,136 @@
 set -euo pipefail
 
 repo=$(cd -- "$(dirname -- "$0")" && pwd)
+usage() {
+  cat <<'EOF'
+Usage: ./bootstrap [--yes] [--use-applied-cache] [profile=brix-root]
+
+Install Nix, build the profile, and activate Home Manager.
+--yes                Skip the Nix installer's confirmation.
+--use-applied-cache  Recover directly from Applied ncps through the Mac's SSH
+                     relay on port 2222, starting a cache tunnel if needed.
+EOF
+}
+
 installer_args=()
-if [ "${1:-}" = --yes ]; then installer_args+=(--yes); shift; fi
-if [ "${1:-}" = --help ] || [ "${1:-}" = -h ]; then
-  echo 'Usage: ./bootstrap [--yes] [profile=brix-root]'
-  echo 'Install Nix, build the profile, and activate Home Manager.'
-  exit 0
+use_applied_cache=0
+applied_cache=
+profile=
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --yes) installer_args=(--yes) ;;
+    --use-applied-cache) use_applied_cache=1 ;;
+    --help|-h) usage; exit 0 ;;
+    -*) echo "Unknown option: $1" >&2; usage >&2; exit 2 ;;
+    *)
+      if [ -n "$profile" ] || [ -z "$1" ]; then
+        echo 'Expected one Home Manager profile.' >&2; exit 2
+      fi
+      profile=$1
+      ;;
+  esac
+  shift
+done
+profile=${profile:-brix-root}
+
+bootstrap_tmp=$(mktemp -d)
+cache_pid=
+tunnel_pid=
+cleanup() {
+  for pid in "$cache_pid" "$tunnel_pid"; do
+    if [ -n "$pid" ]; then
+      kill "$pid" 2>/dev/null || true
+      wait "$pid" 2>/dev/null || true
+    fi
+  done
+  rm -rf "$bootstrap_tmp"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
+
+if [ "$use_applied_cache" -eq 1 ]; then
+  # The same tunnel endpoint and pinned signing key used by managed Brix ncps.
+  applied_cache=http://127.0.0.1:8502
+  applied_public_key='applied:EpR2bpK4ExMQ38bsZmEMGJKo5qC/xboD/knAQMOMzAY='
+  curl_options=(--fail --silent --show-error --connect-timeout 3 --max-time 10)
+  if ! cache_info=$(curl "${curl_options[@]}" "$applied_cache/nix-cache-info" 2>/dev/null); then
+    # Keep the temporary forward alive through activation on a separate port,
+    # so the managed tunnel can bind 8502 without interrupting activation's Nix.
+    applied_cache=http://127.0.0.1:8503
+    echo 'Starting an Applied cache tunnel on port 8503 through the SSH relay on port 2222.'
+    "$repo/nix/applied-cache-tunnel" 8503 >"$bootstrap_tmp/tunnel.log" 2>&1 &
+    tunnel_pid=$!
+    tunnel_deadline=$((SECONDS + 30))
+    while true; do
+      if ! kill -0 "$tunnel_pid" 2>/dev/null; then
+        echo 'Applied cache SSH tunnel exited. Check the Mac relay, SSH credentials, and whether port 8503 is occupied.' >&2
+        cat "$bootstrap_tmp/tunnel.log" >&2
+        exit 1
+      fi
+      if cache_info=$(curl --fail --silent --connect-timeout 2 --max-time 2 "$applied_cache/nix-cache-info"); then
+        break
+      fi
+      if [ "$SECONDS" -ge "$tunnel_deadline" ]; then
+        echo 'Timed out waiting for Applied ncps. Check the Mac relay on port 2222 and Applied ncps on port 8501.' >&2
+        cat "$bootstrap_tmp/tunnel.log" >&2
+        exit 1
+      fi
+      sleep 0.2
+    done
+  fi
+  if ! printf '%s\n' "$cache_info" | grep -qx 'StoreDir: /nix/store'; then
+    echo "Applied ncps at $applied_cache did not return cache information for /nix/store." >&2
+    exit 1
+  fi
+  if ! cache_public_key=$(curl "${curl_options[@]}" "$applied_cache/pubkey"); then
+    echo "Cannot read the Applied ncps signing key at $applied_cache. Check the tunnel and credentials." >&2
+    exit 1
+  fi
+  if [ "$cache_public_key" != "$applied_public_key" ]; then
+    echo "Unexpected Applied ncps signing key at $applied_cache. Check that the tunnel reaches the expected cache." >&2
+    exit 1
+  fi
+  if [ -n "$tunnel_pid" ] && ! kill -0 "$tunnel_pid" 2>/dev/null; then
+    echo 'Applied cache SSH tunnel exited during the cache check.' >&2
+    cat "$bootstrap_tmp/tunnel.log" >&2
+    exit 1
+  fi
+  echo "Recovering from Applied ncps at $applied_cache."
 fi
-profile=${1:-brix-root}
-if [ "$#" -gt 1 ]; then echo 'Expected one Home Manager profile.' >&2; exit 2; fi
 
 "$repo/nix/install" "${installer_args[@]}"
 export PATH="/nix/var/nix/profiles/default/bin:$HOME/.nix-profile/bin:$PATH"
 export USER="${USER:-$(id -un)}"
 
-bootstrap_tmp=$(mktemp -d)
-cache_pid=
-cleanup() {
-  if [ -n "$cache_pid" ]; then
-    kill "$cache_pid" 2>/dev/null || true
-    wait "$cache_pid" 2>/dev/null || true
-  fi
-  rm -rf "$bootstrap_tmp"
-}
-trap cleanup EXIT
-
 # The writable cache and its post-build hook become available after activation.
 nix_options=(--extra-experimental-features 'nix-command flakes' --option post-build-hook '')
+activation_nix_config="${NIX_CONFIG:-}
+substituters =
+extra-substituters =
+post-build-hook ="
 cache="$HOME/code/.nix-cache/ncps"
-if [ -d "$cache" ]; then
+if [ "$use_applied_cache" -eq 1 ]; then
+  nix_options+=(
+    --option substituters "$applied_cache" --option extra-substituters ''
+    --option narinfo-cache-negative-ttl 0
+    --extra-trusted-public-keys "$applied_public_key"
+    --option builders '' --option max-jobs 1
+  )
+  activation_nix_config+="
+substituters = $applied_cache
+extra-trusted-public-keys = $applied_public_key
+narinfo-cache-negative-ttl = 0
+builders =
+max-jobs = 1"
+elif [ -d "$cache" ]; then
   starter_cache="file://$cache/bootstrap?trusted=1"
   if ! curl --fail --silent --max-time 2 http://127.0.0.1:8501/nix-cache-info >/dev/null; then
+    if [ ! -s "$cache/bootstrap/ncps-path" ]; then
+      echo "Missing ncps bootstrap closure: $cache/bootstrap/ncps-path" >&2
+      echo 'Use --use-applied-cache, restore the bootstrap cache, or start managed ncps and run ./nix/prepare-bootstrap for this profile.' >&2
+      exit 1
+    fi
     ncps=$(cat "$cache/bootstrap/ncps-path")
     nix "${nix_options[@]}" copy --option substituters '' --from "$starter_cache" "$ncps"
     "$ncps/bin/ncps" serve \
@@ -40,8 +139,14 @@ if [ -d "$cache" ]; then
       --cache-storage-local="$cache" --cache-database-url="sqlite:$cache/db.sqlite" \
       --cache-upstream-url=http://127.0.0.1:9 >"$bootstrap_tmp/ncps.log" 2>&1 &
     cache_pid=$!
+    cache_deadline=$((SECONDS + 30))
     until curl --fail --silent --max-time 2 http://127.0.0.1:8501/nix-cache-info >/dev/null; do
       if ! kill -0 "$cache_pid" 2>/dev/null; then cat "$bootstrap_tmp/ncps.log" >&2; exit 1; fi
+      if [ "$SECONDS" -ge "$cache_deadline" ]; then
+        echo 'Timed out waiting for bootstrap ncps on port 8501.' >&2
+        cat "$bootstrap_tmp/ncps.log" >&2
+        exit 1
+      fi
       sleep 0.2
     done
   fi
@@ -56,7 +161,16 @@ fi
 nix "${nix_options[@]}" build --no-update-lock-file \
   --out-link "$bootstrap_tmp/result" "path:$repo#homeConfigurations.$profile.activationPackage"
 
-# Home Manager starts the managed ncps service during activation.
+# Release the port for managed ncps. The generation's closure is already local,
+# but activation's nix-env can try to substitute its new user-environment or run
+# the newly linked upload hook before managed ncps starts. Command-line options
+# above do not reach those child processes; scope these overrides to activation.
+# Applied recovery keeps the remote cache available throughout activation.
 if [ -n "$cache_pid" ]; then kill "$cache_pid"; wait "$cache_pid" || true; cache_pid=; fi
+NIX_CONFIG="$activation_nix_config" \
+DOTFILES_BOOTSTRAP_APPLIED_CACHE="$applied_cache" \
 HOME_MANAGER_BACKUP_EXT="${HOME_MANAGER_BACKUP_EXT:-pre-bootstrap-$(date -u +%Y%m%dT%H%M%SZ)-$$}" \
   "$bootstrap_tmp/result/activate"
+
+# Seed recovery on the first bootstrap too, not only after `just refresh`.
+"$repo/nix/prepare-bootstrap" "$profile"

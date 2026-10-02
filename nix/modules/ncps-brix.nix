@@ -38,6 +38,10 @@ in
     run mkdir -p ${data}
     run ln -sfn ${supervisorConfig} ${supervisor}/conf.d/ncps.conf
     run ${supervisorctl} update ncps
+    # An unchanged supervisor config does not restart a stopped or failed process.
+    if ! ${supervisorctl} status ncps >/dev/null; then
+      run ${supervisorctl} start ncps
+    fi
     # Wait for ncps to listen before the next activation step uploads the generation.
     run ${pkgs.curl}/bin/curl --fail --silent --show-error \
       --retry 10 --retry-connrefused --retry-delay 1 \

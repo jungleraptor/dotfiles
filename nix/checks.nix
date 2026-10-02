@@ -5,6 +5,16 @@ in
 {
   # Building the activation package does not run it or change the user's home.
   home = home.activationPackage;
+  bootstrap = pkgs.runCommand "dotfiles-bootstrap-regression" {
+    nativeBuildInputs = [ pkgs.bash pkgs.coreutils pkgs.python3 ];
+  } ''
+    mkdir tests nix
+    cp ${../bootstrap} bootstrap
+    cp ${../nix/applied-cache-tunnel} nix/applied-cache-tunnel
+    cp ${../tests/bootstrap.py} tests/bootstrap.py
+    python3 tests/bootstrap.py
+    touch "$out"
+  '';
   neovim = pkgs.runCommand "dotfiles-neovim-smoke" { } ''
     export HOME="$TMPDIR/home"
     export XDG_CONFIG_HOME="$HOME/.config"

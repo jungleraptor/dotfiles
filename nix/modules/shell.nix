@@ -30,9 +30,6 @@
       if test -r "$HOME/.openai/shprofile/openai_env_vars"
         source "$HOME/.openai/shprofile/openai_env_vars"
       end
-      if test -r "$HOME/.config/buildkite/api-token"
-        set -gx BUILDKITE_API_KEY (command cat "$HOME/.config/buildkite/api-token")
-      end
 
       # Let direnv activate each checkout's venv; retain Python's safety setting.
       set -gx PYTHONSAFEPATH 1
