@@ -145,6 +145,10 @@ The Mac profile is configured for `isaact`. If a Linux devbox uses another login
 edit both account fields in `nix/profiles/linux-user.nix` to match it. These values
 are explicit configuration, not inferred from the shell running Nix.
 
+On Linux, Fish prefers the OpenAI Git/GitHub wrappers in `/opt/openai/og/bin`,
+then `/opt/openai/native/bin`, ahead of Nix when those directories exist. Other
+Home Manager tools remain available from the Nix profile.
+
 On this Mac, use `dotfiles_profile=macbook` in the commands below. Its Fish
 configuration includes the OpenAI helper and Homebrew paths, with Cargo appended.
 Fish loads `~/.openai/shprofile/openai_env_vars` at runtime when readable and sets
