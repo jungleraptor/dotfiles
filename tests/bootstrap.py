@@ -74,6 +74,13 @@ if command == "curl":
             sys.exit(7)
         if ":8503/" in url and not tunnel_ready.exists():
             sys.exit(7)
+        if ":8503/" in url and failure == "ssh-exit":
+            # An unrelated listener can answer before the mock SSH process has
+            # even been scheduled on macOS. Let its startup failure complete.
+            deadline = time.monotonic() + 5
+            while not (root / "ssh-pid").exists() and time.monotonic() < deadline:
+                time.sleep(0.01)
+            time.sleep(0.05)
         if url.endswith("/nix-cache-info"):
             if failure == "applied-info-unavailable":
                 sys.exit(7)
@@ -120,7 +127,8 @@ elif command == "nix":
         using_applied = any("http://127.0.0.1:" + port in configuration for port in ("8502", "8503"))
         if "http://127.0.0.1:8503" in configuration and not tunnel_ready.exists():
             sys.exit("temporary Applied tunnel stopped before build")
-        if not using_applied and (root / "home/code/.nix-cache/ncps").exists() and not ready.exists():
+        macbook = any(arg.endswith("#homeConfigurations.macbook.activationPackage") for arg in args)
+        if not macbook and not using_applied and (root / "home/code/.nix-cache/ncps").exists() and not ready.exists():
             sys.exit("build cannot connect to port 8501")
         if os.environ.get("BOOTSTRAP_TEST_FAIL") == "build":
             sys.exit(19)
@@ -183,9 +191,18 @@ class BootstrapTests(unittest.TestCase):
         shell_env.write_text('''\
 nix() { "$BOOTSTRAP_TEST_ROOT/bin/nix" "$@"; }
 curl() { "$BOOTSTRAP_TEST_ROOT/bin/curl" "$@"; }
+uname() {
+  case "$1" in
+    -s) echo "${BOOTSTRAP_TEST_OS:-Linux}" ;;
+    -m) echo "${BOOTSTRAP_TEST_ARCH:-x86_64}" ;;
+    *) command uname "$@" ;;
+  esac
+}
 sleep() {
   case "${BOOTSTRAP_TEST_FAIL:-}" in
-    ncps-hang|ssh-hang|applied-info-unavailable) SECONDS=$((SECONDS + 10)) ;;
+    ncps-hang|ssh-hang|applied-info-unavailable)
+      command sleep 0.1  # Let background children start before advancing time.
+      SECONDS=$((SECONDS + 10)) ;;
     *) command sleep "$@" ;;
   esac
 }
@@ -204,6 +221,8 @@ experimental-features = nix-command flakes
         self.env.pop("BOOTSTRAP_TEST_FAIL", None)
         self.env.pop("BOOTSTRAP_TEST_NO_MANAGED_TUNNEL", None)
         self.env.pop("HOME_MANAGER_BACKUP_EXT", None)
+        self.env.pop("BOOTSTRAP_TEST_OS", None)
+        self.env.pop("BOOTSTRAP_TEST_ARCH", None)
         self.addCleanup(self.stop_leaked_cache)
 
     def seed_cache(self):
@@ -237,6 +256,9 @@ experimental-features = nix-command flakes
         events = self.events()
         commands = [event["command"] for event in events]
         self.assertIn("activation-complete", commands)
+        build = next(event for event in events if event["command"] == "nix" and "build" in event["args"])
+        self.assertTrue(any(arg.endswith(f"#homeConfigurations.{profile}.activationPackage")
+                            for arg in build["args"]))
         prepared = [event for event in events if event["command"] == "prepare-bootstrap"]
         self.assertEqual([event["args"] for event in prepared], [[profile]])
         self.assertEqual(prepared[0]["nix_config"], self.env["NIX_CONFIG"])
@@ -333,6 +355,33 @@ experimental-features = nix-command flakes
         result = self.run_bootstrap()
         self.assert_success(result)
         self.assertNotIn("ncps", [event["command"] for event in self.events()])
+
+    def test_macos_defaults_to_macbook_and_ignores_leftover_ncps_cache(self):
+        self.env.update(BOOTSTRAP_TEST_OS="Darwin", BOOTSTRAP_TEST_ARCH="arm64")
+        self.cache.mkdir(parents=True)  # No Linux ncps closure should be needed.
+        result = self.run_bootstrap("--yes")
+        self.assert_success(result, profile="macbook")
+        commands = [event["command"] for event in self.events()]
+        self.assertNotIn("ncps", commands)
+        self.assertNotIn("curl", commands)
+        self.assertFalse(any(event["command"] == "nix" and "copy" in event["args"]
+                             for event in self.events()))
+
+    def test_explicit_profile_overrides_macos_default(self):
+        self.env.update(BOOTSTRAP_TEST_OS="Darwin", BOOTSTRAP_TEST_ARCH="arm64")
+        result = self.run_bootstrap("custom-profile")
+        self.assert_success(result, profile="custom-profile")
+
+    def test_arm_linux_defaults_to_linux_arm(self):
+        self.env["BOOTSTRAP_TEST_ARCH"] = "aarch64"
+        self.assert_success(self.run_bootstrap(), profile="linux-arm")
+
+    def test_macbook_cache_preparation_is_a_noop_with_leftover_cache(self):
+        self.seed_cache()
+        result = subprocess.run(["bash", str(REPO / "nix/prepare-bootstrap"), "macbook"],
+                                env=self.env, capture_output=True, text=True, timeout=5)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.events(), [])
 
     def test_existing_cache_service_is_not_stopped(self):
         self.seed_cache()

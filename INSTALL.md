@@ -19,7 +19,10 @@ On a fresh machine, from this checkout:
 ```
 
 This installs Nix if needed, builds the selected profile, and activates Home
-Manager (default: `brix-root`). Use `./bootstrap --yes` to skip the installer's
+Manager (default: `macbook` on Apple Silicon macOS, `brix-root` on x86-64 Linux,
+and `linux-arm` on ARM64 Linux). The `macbook` profile skips local ncps recovery
+and cache preparation, even if an old ncps cache directory exists.
+Use `./bootstrap --yes` to skip the installer's
 confirmation, or `./bootstrap --yes applied` to select another profile.
 To install only Nix without activating dotfiles, run `./nix/install` instead.
 
@@ -164,9 +167,15 @@ Fish loads `~/.openai/shprofile/openai_env_vars` at runtime when readable and se
 Buildkite credentials come from the CLI's OAuth store as described below.
 The OpenAI Python venv is left to each checkout's direnv configuration.
 
-The Mac profile also manages Alacritty's TOML configuration. Install Alacritty
-and Hack Nerd Font Mono separately; the config uses the default login shell
-and does not import the old external Doom One theme.
+The Mac profile installs Alacritty and manages its TOML configuration. Home
+Manager copies macOS app bundles into `/Applications/Home Manager Apps` so they
+appear in Applications and can be indexed by Spotlight. Keep that directory
+exclusive to Home Manager: activation synchronizes and removes unmanaged files
+inside it. Any existing `/Applications/Alacritty.app` remains a separate install;
+remove that old copy after verifying the managed app. The profile also installs
+`nerd-fonts.hack`, including Hack Nerd Font Mono, into `~/Library/Fonts/HomeManager`
+for macOS applications. Alacritty starts the Home Manager Fish login shell and does not import
+the old external Doom One theme.
 
 The examples below use Bash/Zsh and the Brix profile:
 

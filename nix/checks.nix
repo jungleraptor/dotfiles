@@ -11,6 +11,7 @@ in
     mkdir tests nix
     cp ${../bootstrap} bootstrap
     cp ${../nix/applied-cache-tunnel} nix/applied-cache-tunnel
+    cp ${../nix/prepare-bootstrap} nix/prepare-bootstrap
     cp ${../tests/bootstrap.py} tests/bootstrap.py
     python3 tests/bootstrap.py
     touch "$out"

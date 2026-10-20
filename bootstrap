@@ -4,9 +4,11 @@ set -euo pipefail
 repo=$(cd -- "$(dirname -- "$0")" && pwd)
 usage() {
   cat <<'EOF'
-Usage: ./bootstrap [--yes] [--use-applied-cache] [profile=brix-root]
+Usage: ./bootstrap [--yes] [--use-applied-cache] [profile]
 
 Install Nix, build the profile, and activate Home Manager.
+Default profile: macbook on Apple Silicon macOS, brix-root on x86-64 Linux,
+                 linux-arm on ARM64 Linux.
 --yes                Skip the Nix installer's confirmation.
 --use-applied-cache  Recover directly from Applied ncps through the Mac's SSH
                      relay on port 2222, starting a cache tunnel if needed.
@@ -32,7 +34,15 @@ while [ "$#" -gt 0 ]; do
   esac
   shift
 done
-profile=${profile:-brix-root}
+if [ -z "$profile" ]; then
+  case "$(uname -s)-$(uname -m)" in
+    Darwin-arm64) profile=macbook ;;
+    Linux-x86_64) profile=brix-root ;;
+    Linux-aarch64|Linux-arm64) profile=linux-arm ;;
+    *) echo 'Unsupported platform; specify a Home Manager profile explicitly.' >&2; exit 2 ;;
+  esac
+fi
+echo "Bootstrapping Home Manager profile: $profile"
 
 bootstrap_tmp=$(mktemp -d)
 cache_pid=
@@ -100,7 +110,7 @@ if [ "$use_applied_cache" -eq 1 ]; then
   echo "Recovering from Applied ncps at $applied_cache."
 fi
 
-"$repo/nix/install" "${installer_args[@]}"
+"$repo/nix/install" ${installer_args[@]+"${installer_args[@]}"}
 export PATH="/nix/var/nix/profiles/default/bin:$HOME/.nix-profile/bin:$PATH"
 export USER="${USER:-$(id -un)}"
 
@@ -124,7 +134,7 @@ extra-trusted-public-keys = $applied_public_key
 narinfo-cache-negative-ttl = 0
 builders =
 max-jobs = 1"
-elif [ -d "$cache" ]; then
+elif [ "$profile" != macbook ] && [ -d "$cache" ]; then
   starter_cache="file://$cache/bootstrap?trusted=1"
   if ! curl --fail --silent --max-time 2 http://127.0.0.1:8501/nix-cache-info >/dev/null; then
     if [ ! -s "$cache/bootstrap/ncps-path" ]; then

@@ -1,7 +1,18 @@
-{ ... }:
+{ pkgs, ... }:
 {
+  home.packages = [
+    pkgs.alacritty
+    pkgs.nerd-fonts.hack
+  ];
+  # Copy real app bundles so Spotlight can index them. Keep Home Manager's
+  # synchronized directory separate from other machine-installed applications.
+  targets.darwin.linkApps.enable = false;
+  targets.darwin.copyApps = {
+    enable = true;
+    directory = "/Applications/Home Manager Apps";
+  };
+
   home.file."Library/Preferences/clangd/config.yaml".source = ../../clangd.yaml;
-  # The application remains machine-owned; Home Manager supplies its config.
   xdg.configFile."alacritty/alacritty.toml".source = ../../alacritty.toml;
 
   programs.fish.shellInit = ''
