@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+remote_command='cd /root/code/dotfiles && exec ./bootstrap --yes'
+for arg in "$@"; do
+  case "$arg" in
+    --use-applied-cache)
+      remote_command+=" $arg"
+      ;;
+    --help|-h)
+      echo 'Usage: brix-recover [--use-applied-cache]'
+      exit 0
+      ;;
+    *)
+      echo "Unknown option: $arg" >&2
+      echo 'Usage: brix-recover [--use-applied-cache]' >&2
+      exit 2
+      ;;
+  esac
+done
+
+# Run from the Mac after a pod restart; the checkout survives on Brix.
+exec brix ssh -c fleet-research-agent-hub-0 -n isaact codex-box-0 -- \
+  -T "$remote_command"

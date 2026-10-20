@@ -41,6 +41,7 @@
       end
     '';
     shellAliases = {
+      brix-recover = "${pkgs.bash}/bin/bash ${../recover-brix}";
       cat = "bat";
       tmux = "TERM=xterm-256color command tmux";
     };

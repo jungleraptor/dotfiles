@@ -23,7 +23,15 @@ Manager (default: `brix-root`). Use `./bootstrap --yes` to skip the installer's
 confirmation, or `./bootstrap --yes applied` to select another profile.
 To install only Nix without activating dotfiles, run `./nix/install` instead.
 
-After pod recreation, rerun `./bootstrap` from this persistent checkout. When
+From the Mac, run `brix-recover` after pod recreation. This Fish alias waits for
+`codex-box-0` in cluster `fleet-research-agent-hub-0`, namespace `isaact`, then
+runs `cd /root/code/dotfiles && exec ./bootstrap --yes` over `brix ssh`.
+Use `brix-recover --use-applied-cache` to recover through Applied instead.
+Activate the updated Mac Home Manager configuration with `just refresh` to
+install the alias. Before activation, run `bash ./nix/recover-brix` directly
+from this checkout.
+
+On Brix itself, rerun `./bootstrap` from this persistent checkout. When
 `~/code/.nix-cache/ncps` exists, bootstrap restores ncps from its `bootstrap` file
 cache and temporarily serves the persisted cache on port 8501 during the build.
 It stops that process before activation so the managed service can take over.
